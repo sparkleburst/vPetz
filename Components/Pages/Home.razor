@@ -1,0 +1,31 @@
+﻿@page "/"
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>Home</PageTitle>
+
+<div class="landing-container">
+    <div class="adopt-me-link">
+        <a href="@AdoptMeLink">Adopt Me!</a>
+    </div>
+</div>
+
+<h1>Hello, world!</h1>
+
+Welcome to your new app.
+
+@code {
+    private string AdoptMeLink = "Account/register"; // Default to registration
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user?.Identity?.IsAuthenticated ?? false)
+        {
+            // If the user is already registered and logged in, direct to the adoption page
+            AdoptMeLink = "/adoption";
+        }
+    }
+}
