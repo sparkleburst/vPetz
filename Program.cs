@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using vPetz.Components;
 using vPetz.Components.Account;
 using vPetz.Data;
+using vPetz.Data.BackgroundServices;
+using vPetz.Data.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +17,9 @@ builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
+builder.Services.AddScoped<IPetService, PetService>();
+
+builder.Services.AddHostedService<PetReplenishmentService>();
 
 builder.Services.AddAuthentication(options =>
     {

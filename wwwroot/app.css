@@ -72,3 +72,43 @@ h1:focus {
     border-color: #0056b3;
     cursor: pointer;
 }
+
+.pet-list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* Creates three columns of equal width */
+    grid-gap: 20px; /* Space between cards */
+    margin: 20px; /* Add margin around the grid for better spacing from the page edges */
+}
+
+.pet-card {
+    background: #f9f9f9; /* Light background for the cards */
+    border: 1px solid #ccc; /* Border for the cards */
+    padding: 10px; /* Padding inside the cards */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.pet-card img {
+    width: 100% !important; /* Full width of the card */
+    height: auto !important; /* Maintain aspect ratio */
+    max-height: 200px !important; /* Limiting the image height */
+    object-fit: cover !important; /* Ensures the image covers the area without stretching */
+}
+
+.pet-card h4, .pet-card p {
+    text-align: center; /* Centering text in the card */
+    margin-top: 10px; /* Space between image and text */
+}
+
+@media (max-width: 768px) {
+    .pet-list {
+        grid-template-columns: repeat(2, 1fr); /* Two columns on smaller screens */
+    }
+}
+
+@media (max-width: 480px) {
+    .pet-list {
+        grid-template-columns: 1fr; /* One column on very small screens */
+    }
+}

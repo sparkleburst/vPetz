@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using vPetz.Data.Models.Enums; // This imports the PetType enum
 
 namespace vPetz.Data
 {
@@ -36,7 +37,7 @@ namespace vPetz.Data
         [StringLength(500)]
         public string Description { get; set; } = string.Empty;
 
-        public string ImageURL { get; set; } = string.Empty;
+        public string ImageURL { get; set; } = "/images/default-pet.png"; // Default image URL
 
         // Foreign key for ApplicationUser
         public string? OwnerId { get; set; }

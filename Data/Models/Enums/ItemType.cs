@@ -1,4 +1,4 @@
-namespace vPetz.Data
+namespace vPetz.Data.Models.Enums
 {
     public enum ItemType
     {

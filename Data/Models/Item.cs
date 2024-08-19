@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using vPetz.Data.Models.Enums;
 
 namespace vPetz.Data
 {

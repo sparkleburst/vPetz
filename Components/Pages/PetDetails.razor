@@ -1,0 +1,38 @@
+@page "/pet/{PetId:int}"
+@using vPetz.Data
+@using vPetz.Data.Services
+@inject IPetService PetService
+@inject NavigationManager NavigationManager
+
+<h3>Pet Details</h3>
+
+@if (pet == null)
+{
+    <p><em>Loading pet details...</em></p>
+}
+else
+{
+    <div>
+        <h4>@pet.Name</h4>
+        <p>Type: @pet.Type.ToString()</p>
+        <p>Age: @pet.Age</p>
+        <p>Happiness: @pet.Happiness</p>
+        <p>Sleepiness: @pet.Sleepiness</p>
+        <p>Cleanliness: @pet.Cleanliness</p>
+        <p>Hunger: @pet.Hunger</p>
+        <p>Thirst: @pet.Thirst</p>
+        <p>Owner: @pet.Owner?.UserName ?? "Shelter"</p>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int PetId { get; set; }
+
+    private Pet? pet;
+
+    protected override async Task OnInitializedAsync()
+    {
+        pet = await PetService.GetPetByIdAsync(PetId);
+    }
+}

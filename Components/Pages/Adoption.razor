@@ -1,0 +1,83 @@
+@page "/adoption"
+@using vPetz.Data
+@using vPetz.Data.Services
+@inject IPetService PetService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<h3>Pets Available for Adoption</h3>
+
+<button @onclick="TestClick">Test Click</button>
+
+@if (availablePets is null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (availablePets.Count == 0)
+{
+    <p>No pets available for adoption at this time.</p>
+}
+else
+{
+    <div class="pet-list">
+        @foreach (var pet in availablePets)
+        {
+            <div class="pet-card">
+                <img src="@(string.IsNullOrEmpty(pet.ImageURL) ? "/images/default-pet.png" : pet.ImageURL)" alt="Pet" />
+                <h4>@pet.Name</h4>
+                <p>@pet.Description</p>
+
+                <button @onclick="() => AdoptPet(pet)">Adopt</button>
+
+                @* <a href="/pet/@pet.Id">adopt pet</a> *@
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private List<Pet> availablePets = new List<Pet>(); // Initialized as an empty list
+    private string? currentUserName; // This will store the username of the currently logged-in user
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        currentUserName = authState.User.Identity?.Name; // Get the username from the identity
+
+        availablePets = await PetService.GetAvailablePetsAsync();
+    }
+
+    private async Task AdoptPet(Pet pet)
+    {
+        Console.WriteLine($"Attempting to adopt pet: {pet.Name} by user: {currentUserName}");
+
+        if (currentUserName != null)
+        {
+            try
+            {
+                Console.WriteLine($"Adopting pet: {pet.Name} by {currentUserName}"); // Additional debug output
+                await PetService.AdoptPetAsync(pet, currentUserName);
+                availablePets.Remove(pet);
+                StateHasChanged(); // Update the UI
+
+                Console.WriteLine("Navigating to pet details page"); // Additional debug output
+                NavigationManager.NavigateTo($"/pet/{pet.Id}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error adopting pet: {ex.Message}"); // Log any exceptions that occur
+            }
+        }
+        else
+        {
+            Console.WriteLine("Current user is not logged in."); // Debug output if no user is logged in
+        }
+        
+    }
+
+    private void TestClick()
+    {
+        Console.WriteLine("Test button clicked!");
+    }
+}
