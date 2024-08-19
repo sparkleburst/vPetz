@@ -54,6 +54,8 @@ namespace vPetz.Data
 
         // Define your DbSets (tables) here
         public DbSet<Pet> Pets { get; set; }
+        public DbSet<Item> Items { get; set; }
+        public DbSet<Transaction> Transactions { get; set; }
         // Add other DbSets as needed
     }
 }

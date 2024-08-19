@@ -13,6 +13,8 @@ public class ApplicationUser : IdentityUser
     [StringLength(100, ErrorMessage = "Last name cannot be longer than 100 characters.")]
     public String? LastName { get; set; }
 
+    public int Coins { get; set; } = 10;  // Default starting coins
+
     // Navigation property for pets owned by the user
     public ICollection<Pet> Pets { get; set; } = new List<Pet>();
 
