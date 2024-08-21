@@ -50,6 +50,13 @@ namespace vPetz.Data
                     .HasMaxLength(255)
                     .IsUnicode(false);
             });
+
+            // Configure relationships
+            builder.Entity<Pet>()
+                .HasOne(p => p.Owner)
+                .WithMany(u => u.Pets)
+                .HasForeignKey(p => p.OwnerId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
 
         // Define your DbSets (tables) here

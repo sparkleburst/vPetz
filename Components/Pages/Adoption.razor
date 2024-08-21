@@ -4,7 +4,7 @@
 @inject IPetService PetService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
-@rendermode InteractiveServer
+@rendermode InteractiveServer // this makes the buttons work
 
 <h3>Pets Available for Adoption</h3>
 
@@ -26,6 +26,8 @@ else
             <div class="pet-card">
                 <img src="@(string.IsNullOrEmpty(pet.ImageURL) ? "/images/default-pet.png" : pet.ImageURL)" alt="Pet" />
                 <h4>@pet.Name</h4>
+                <h4>Age: @pet.Age</h4>
+                <h4>@pet.Type</h4>
                 <p>@pet.Description</p>
 
                 <button @onclick="() => AdoptPet(pet)">Adopt</button>
@@ -61,8 +63,8 @@ else
                 availablePets.Remove(pet);
                 StateHasChanged(); // Update the UI
 
-                Console.WriteLine("Navigating to pet details page"); // Additional debug output
-                NavigationManager.NavigateTo($"/pet/{pet.Id}");
+                Console.WriteLine("Navigating to my-pets page"); // Additional debug output
+                NavigationManager.NavigateTo($"my-pets");
             }
             catch (Exception ex)
             {

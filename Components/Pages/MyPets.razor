@@ -1,0 +1,80 @@
+@page "/my-pets"
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Identity;
+@using vPetz.Data.Models
+@inject IPetService PetService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject UserManager<ApplicationUser> UserManager
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer // this makes the buttons work
+
+<h3>My Pets</h3>
+
+@if (isLoading)
+{
+    <p>Loading your pets...</p>
+}
+else if (userPets == null || !userPets.Any())
+{
+    <p>You don't have any pets yet. <a href="/adoption">Adopt a pet now!</a></p>
+}
+else
+{
+    <div class="pet-list">
+        @foreach (var pet in userPets)
+        {
+            <div class="pet-card">
+                <img src="@(string.IsNullOrEmpty(pet.ImageURL) ? "/images/default-pet.png" : pet.ImageURL)" alt="@pet.Name" />
+                <h4>@pet.Name</h4>
+                <p>@pet.Description</p>
+                <div class="pet-stats">
+                    <p><strong>Happiness:</strong> @pet.Happiness%</p>
+                    <p><strong>Hunger:</strong> @pet.Hunger%</p>
+                    <p><strong>Energy:</strong> @pet.Energy%</p>
+                </div>
+                <button class="btn btn-primary" @onclick="() => InteractWithPet(pet.Id)">Interact</button>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private List<Pet> userPets = new List<Pet>();
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated ?? false)
+        {
+            var appUser = await UserManager.GetUserAsync(user);
+            var userId = appUser?.Id;
+
+            if (!string.IsNullOrEmpty(userId))
+            {
+                Console.WriteLine($"User ID: {userId}"); // Debugging output to check the userId
+                userPets = await PetService.GetUserPetsAsync(userId);
+                Console.WriteLine($"Pets count: {userPets.Count}"); // Debugging output to check the number of pets retrieved
+            }
+            else
+            {
+                Console.WriteLine("User ID is null, cannot retrieve pets.");
+                userPets = new List<Pet>(); // Initialize as an empty list if userId is null
+            }
+        }
+        else
+        {
+            Console.WriteLine("User is not authenticated, redirecting to login.");
+            NavigationManager.NavigateTo("/authentication/login");
+        }
+
+        isLoading = false;
+    }
+
+    private void InteractWithPet(int petId)
+    {
+        NavigationManager.NavigateTo($"/pet/{petId}");
+    }
+}

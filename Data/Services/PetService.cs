@@ -50,7 +50,7 @@ namespace vPetz.Data.Services
                     Age = random.Next(1, 10),
                     Type = (PetType)random.Next(0, 5),
                     Happiness = 50,
-                    Sleepiness = 0,
+                    Energy = 100,
                     Cleanliness = 70,
                     Hunger = 50,
                     Thirst = 50,
@@ -75,6 +75,13 @@ namespace vPetz.Data.Services
             }
 
             return pet;
+        }
+
+        public async Task<List<Pet>> GetUserPetsAsync(string userId)
+        {
+            return await _context.Pets
+                .Where(p => p.OwnerId == userId)
+                .ToListAsync();
         }
     }
 }

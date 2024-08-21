@@ -21,7 +21,7 @@ namespace vPetz.Data
         public double Happiness { get; set; } = 50; // Default to 50
 
         [Range(0, 100)]
-        public double Sleepiness { get; set; } = 0; // Default to 0
+        public double Energy { get; set; } = 100; // Default to 100
 
         [Range(0, 100)]
         public double Cleanliness { get; set; } = 70; // Default to 70
@@ -33,6 +33,8 @@ namespace vPetz.Data
         public double Thirst { get; set; } = 50; // Default to 50
 
         public bool IsAdopted { get; set; } = false; // Default to false, indicating the pet is not available for interactions until adopted.
+
+        public DateTime AdoptionDate { get; set; }
 
         [StringLength(500)]
         public string Description { get; set; } = string.Empty;

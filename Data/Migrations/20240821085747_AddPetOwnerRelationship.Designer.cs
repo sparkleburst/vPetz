@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using vPetz.Data;
 
@@ -11,9 +12,11 @@ using vPetz.Data;
 namespace vPetz.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240821085747_AddPetOwnerRelationship")]
+    partial class AddPetOwnerRelationship
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -294,9 +297,6 @@ namespace vPetz.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("varchar(500)");
 
-                    b.Property<double>("Energy")
-                        .HasColumnType("double");
-
                     b.Property<double>("Happiness")
                         .HasColumnType("double");
 
@@ -317,6 +317,9 @@ namespace vPetz.Migrations
 
                     b.Property<string>("OwnerId")
                         .HasColumnType("varchar(255)");
+
+                    b.Property<double>("Sleepiness")
+                        .HasColumnType("double");
 
                     b.Property<double>("Thirst")
                         .HasColumnType("double");

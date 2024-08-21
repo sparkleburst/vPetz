@@ -17,11 +17,11 @@ else
         <p>Type: @pet.Type.ToString()</p>
         <p>Age: @pet.Age</p>
         <p>Happiness: @pet.Happiness</p>
-        <p>Sleepiness: @pet.Sleepiness</p>
+        <p>Energy: @pet.Energy</p>
         <p>Cleanliness: @pet.Cleanliness</p>
         <p>Hunger: @pet.Hunger</p>
         <p>Thirst: @pet.Thirst</p>
-        <p>Owner: @pet.Owner?.UserName ?? "Shelter"</p>
+        <p>Owner: @(pet.Owner?.UserName ?? "Shelter")</p>
     </div>
 }
 
