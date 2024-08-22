@@ -4,11 +4,10 @@
 @inject IPetService PetService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
+
 @rendermode InteractiveServer // this makes the buttons work
 
 <h3>Pets Available for Adoption</h3>
-
-<button @onclick="TestClick">Test Click</button>
 
 @if (availablePets is null)
 {
@@ -20,19 +19,20 @@ else if (availablePets.Count == 0)
 }
 else
 {
-    <div class="pet-list">
+    <div class="row">
         @foreach (var pet in availablePets)
         {
-            <div class="pet-card">
-                <img src="@(string.IsNullOrEmpty(pet.ImageURL) ? "/images/default-pet.png" : pet.ImageURL)" alt="Pet" />
-                <h4>@pet.Name</h4>
-                <h4>Age: @pet.Age</h4>
-                <h4>@pet.Type</h4>
-                <p>@pet.Description</p>
-
-                <button @onclick="() => AdoptPet(pet)">Adopt</button>
-
-                @* <a href="/pet/@pet.Id">adopt pet</a> *@
+            <div class="col-auto d-flex justify-content-center mb-4" style="min-width: 200px;">
+                <div class="card pet-card" style="width: 200px;">
+                    <div class="card-body text-center p-2">
+                        <img src="@(string.IsNullOrEmpty(pet.ImageURL) ? "/images/default-pet.png" : pet.ImageURL)"
+                             alt="@pet.Name" class="img-fluid" style="width: 100%; height: 200px; object-fit: cover;" />
+                        <h5 class="mt-2">@pet.Name</h5>
+                        <p>@pet.Type</p>
+                        <p>A lovely @pet.Type.ToString().ToLower() looking for a home.</p>
+                        <button class="btn btn-primary btn-sm mt-2" @onclick="() => AdoptPet(pet)">Adopt</button>
+                    </div>
+                </div>
             </div>
         }
     </div>
@@ -75,11 +75,5 @@ else
         {
             Console.WriteLine("Current user is not logged in."); // Debug output if no user is logged in
         }
-        
-    }
-
-    private void TestClick()
-    {
-        Console.WriteLine("Test button clicked!");
     }
 }

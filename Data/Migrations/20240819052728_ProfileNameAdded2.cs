@@ -12,7 +12,7 @@ namespace vPetz.Migrations
         {
             migrationBuilder.AddColumn<string>(
                 name: "FirstName",
-                table: "AspNetUsers",
+                table: "Asp",
                 type: "longtext",
                 nullable: true)
                 .Annotation("MySql:CharSet", "utf8mb4");

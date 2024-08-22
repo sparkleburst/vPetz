@@ -18,5 +18,11 @@ public class ApplicationUser : IdentityUser
     // Navigation property for pets owned by the user
     public ICollection<Pet> Pets { get; set; } = new List<Pet>();
 
+    // Navigation property for pets loved by the user
+    public ICollection<UserPetLove> LovedPets { get; set; } = new List<UserPetLove>();
+
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
+    public DateTime UpdatedAt { get; set; } = DateTime.Now;
+
 }
 

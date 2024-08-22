@@ -51,6 +51,19 @@ namespace vPetz.Data
                     .IsUnicode(false);
             });
 
+            // Configure the many-to-many relationship between ApplicationUser and Pet using UserPetLove
+            builder.Entity<UserPetLove>()
+                .HasOne(ul => ul.User)
+                .WithMany(u => u.LovedPets)
+                .HasForeignKey(ul => ul.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<UserPetLove>()
+                .HasOne(ul => ul.Pet)
+                .WithMany(p => p.LovedByUsers)
+                .HasForeignKey(ul => ul.PetId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             // Configure relationships
             builder.Entity<Pet>()
                 .HasOne(p => p.Owner)
@@ -63,6 +76,7 @@ namespace vPetz.Data
         public DbSet<Pet> Pets { get; set; }
         public DbSet<Item> Items { get; set; }
         public DbSet<Transaction> Transactions { get; set; }
-        // Add other DbSets as needed
+        public DbSet<UserPetLove> UserPetLoves { get; set; }
+
     }
 }

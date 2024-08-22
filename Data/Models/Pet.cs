@@ -39,11 +39,17 @@ namespace vPetz.Data
         [StringLength(500)]
         public string Description { get; set; } = string.Empty;
 
-        public string ImageURL { get; set; } = "/images/default-pet.png"; // Default image URL
+        public string ImageURL { get; set; } = "/images/default-cat.webp"; // Default image URL
 
         // Foreign key for ApplicationUser
         public string? OwnerId { get; set; }
         public ApplicationUser? Owner { get; set; }
+
+        // Navigation property for users who love this pet
+        public ICollection<UserPetLove> LovedByUsers { get; set; } = new List<UserPetLove>();
+
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime UpdatedAt { get; set; } = DateTime.Now;
 
     }
 }

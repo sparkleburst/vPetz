@@ -1,0 +1,134 @@
+@page "/pets-and-owners"
+
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Identity
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Components
+@using vPetz.Data.Models
+@using vPetz.Data 
+
+@inject NavigationManager NavigationManager
+@inject IPetService PetService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IServiceProvider ServiceProvider
+
+@rendermode InteractiveServer // Ensures buttons work
+
+<h3 class="text-center">Pets and their Owners</h3>
+
+@if (isLoading)
+{
+    <p>Loading pets and their owners...</p>
+}
+else if (petsAndOwners == null || !petsAndOwners.Any())
+{
+    <p>No pets or owners found.</p>
+}
+else
+{
+    <div class="d-flex flex-wrap justify-content-center">
+        @foreach (var pet in petsAndOwners)
+        {
+            <div class="card mb-4 mx-3" style="width: 200px;">
+                <div class="card-body text-center p-2">
+                    <p><strong>Owner Name:</strong> @pet.Owner?.UserName</p>
+                    <p><strong>Pet Name:</strong> @pet.Name</p>
+                    <img src="@(string.IsNullOrEmpty(pet.ImageURL) ? "/images/default-cat.webp" : pet.ImageURL)"
+                         alt="@pet.Name" class="img-fluid" style="width: 100%; height: 200px; object-fit: cover;" />
+                    <button class="btn @GetButtonClass(pet.Id) btn-sm mt-2" @onclick="() => LovePet(pet.Id)">
+                        <span class="bi bi-heart"></span> @GetButtonText(pet.Id)
+                    </button>
+                    <p class="mt-2">This @pet.Type.ToString().ToLower() has been loved @GetLoveCount(pet.Id) times.</p>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private List<Pet> petsAndOwners = new List<Pet>();
+    private bool isLoading = true;
+    private Dictionary<int, bool> lovedPets = new Dictionary<int, bool>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPetsAndOwners();
+    }
+
+    private async Task LoadPetsAndOwners()
+    {
+        petsAndOwners = await PetService.GetAllAdoptedPetsAsync();
+        foreach (var pet in petsAndOwners)
+        {
+            lovedPets[pet.Id] = await HasUserLovedPetAsync(pet.Id);
+        }
+        isLoading = false;
+    }
+
+    private void InteractWithPet(int petId)
+    {
+        NavigationManager.NavigateTo($"/pet/{petId}");
+    }
+
+    private async Task LovePet(int petId)
+    {
+        using (var scope = ServiceProvider.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!string.IsNullOrEmpty(userId))
+            {
+                var love = new UserPetLove
+                {
+                    UserId = userId,
+                    PetId = petId
+                };
+
+                var existingLove = context.UserPetLoves
+                    .FirstOrDefault(ul => ul.UserId == userId && ul.PetId == petId);
+
+                if (existingLove == null)
+                {
+                    context.UserPetLoves.Add(love);
+                    await context.SaveChangesAsync();
+                    lovedPets[petId] = true;  // Update the dictionary to reflect that this pet has been loved
+                }
+            }
+        }
+    }
+
+    private int GetLoveCount(int petId)
+    {
+        using (var scope = ServiceProvider.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            return context.UserPetLoves.Count(ul => ul.PetId == petId);
+        }
+    }
+
+    private async Task<bool> HasUserLovedPetAsync(int petId)
+    {
+        using (var scope = ServiceProvider.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            return context.UserPetLoves.Any(ul => ul.UserId == userId && ul.PetId == petId);
+        }
+    }
+
+    private string GetButtonText(int petId)
+    {
+        return lovedPets.ContainsKey(petId) && lovedPets[petId] ? "Loved" : "Love";
+    }
+
+    private string GetButtonClass(int petId)
+    {
+        return lovedPets.ContainsKey(petId) && lovedPets[petId] ? "btn-danger" : "btn-outline-danger";
+    }
+}

@@ -1,14 +1,17 @@
 @page "/my-pets"
+
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Identity;
 @using vPetz.Data.Models
+
+@inject NavigationManager NavigationManager
 @inject IPetService PetService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject UserManager<ApplicationUser> UserManager
-@inject NavigationManager NavigationManager
+
 @rendermode InteractiveServer // this makes the buttons work
 
-<h3>My Pets</h3>
+<h3 class="text-center">My Pets</h3>
 
 @if (isLoading)
 {
@@ -20,19 +23,21 @@ else if (userPets == null || !userPets.Any())
 }
 else
 {
-    <div class="pet-list">
+    <div class="d-flex flex-wrap justify-content-center">
         @foreach (var pet in userPets)
         {
-            <div class="pet-card">
-                <img src="@(string.IsNullOrEmpty(pet.ImageURL) ? "/images/default-pet.png" : pet.ImageURL)" alt="@pet.Name" />
-                <h4>@pet.Name</h4>
-                <p>@pet.Description</p>
-                <div class="pet-stats">
-                    <p><strong>Happiness:</strong> @pet.Happiness%</p>
-                    <p><strong>Hunger:</strong> @pet.Hunger%</p>
-                    <p><strong>Energy:</strong> @pet.Energy%</p>
+            <div class="card mb-4 mx-2" style="width: 200px;">
+                <div class="card-body text-center p-2">
+                    <img src="@(string.IsNullOrEmpty(pet.ImageURL) ? "/images/default-cat.webp" : pet.ImageURL)"
+                         alt="@pet.Name" class="img-fluid" style="width: 100%; height: 200px; object-fit: cover;" />
+                    <h4 class="mt-2">@pet.Name</h4>
+                    <p>@pet.Description</p>
+                    <div class="pet-stats">
+                        <p>@PetService.GetPetFeeling(pet)</p>
+                    </div>
+                    <button class="btn btn-primary btn-sm mt-2" @onclick="() => InteractWithPet(pet.Id)">Interact</button>
+                    <button class="btn btn-danger btn-sm mt-2" @onclick="() => DeletePet(pet.Id)">Delete</button>
                 </div>
-                <button class="btn btn-primary" @onclick="() => InteractWithPet(pet.Id)">Interact</button>
             </div>
         }
     </div>
@@ -44,6 +49,11 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        await LoadUserPets();
+    }
+
+    private async Task LoadUserPets()
+    {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
 
@@ -54,20 +64,8 @@ else
 
             if (!string.IsNullOrEmpty(userId))
             {
-                Console.WriteLine($"User ID: {userId}"); // Debugging output to check the userId
                 userPets = await PetService.GetUserPetsAsync(userId);
-                Console.WriteLine($"Pets count: {userPets.Count}"); // Debugging output to check the number of pets retrieved
             }
-            else
-            {
-                Console.WriteLine("User ID is null, cannot retrieve pets.");
-                userPets = new List<Pet>(); // Initialize as an empty list if userId is null
-            }
-        }
-        else
-        {
-            Console.WriteLine("User is not authenticated, redirecting to login.");
-            NavigationManager.NavigateTo("/authentication/login");
         }
 
         isLoading = false;
@@ -76,5 +74,20 @@ else
     private void InteractWithPet(int petId)
     {
         NavigationManager.NavigateTo($"/pet/{petId}");
+    }
+
+    private async Task DeletePet(int petId)
+    {
+        var pet = userPets.FirstOrDefault(p => p.Id == petId);
+        if (pet != null)
+        {
+            bool isDeleted = await PetService.DeletePetAsync(petId);
+            if (isDeleted)
+            {
+                userPets.Remove(pet);
+                StateHasChanged();
+                Console.WriteLine($"Pet {pet.Name} has been deleted.");
+            }
+        }
     }
 }

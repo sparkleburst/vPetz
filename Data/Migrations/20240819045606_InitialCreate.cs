@@ -35,7 +35,7 @@ namespace vPetz.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
-                name: "AspNetUsers",
+                name: "Asp",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "varchar(255)", unicode: false, maxLength: 255, nullable: false)
@@ -65,7 +65,7 @@ namespace vPetz.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_AspNetUsers", x => x.Id);
+                    table.PrimaryKey("PK_Asp", x => x.Id);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -111,9 +111,9 @@ namespace vPetz.Migrations
                 {
                     table.PrimaryKey("PK_AspNetUserClaims", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_AspNetUserClaims_AspNetUsers_UserId",
+                        name: "FK_AspNetUserClaims_Asp_UserId",
                         column: x => x.UserId,
-                        principalTable: "AspNetUsers",
+                        principalTable: "Asp",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
@@ -136,9 +136,9 @@ namespace vPetz.Migrations
                 {
                     table.PrimaryKey("PK_AspNetUserLogins", x => new { x.LoginProvider, x.ProviderKey });
                     table.ForeignKey(
-                        name: "FK_AspNetUserLogins_AspNetUsers_UserId",
+                        name: "FK_AspNetUserLogins_Asp_UserId",
                         column: x => x.UserId,
-                        principalTable: "AspNetUsers",
+                        principalTable: "Asp",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
@@ -163,9 +163,9 @@ namespace vPetz.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_AspNetUserRoles_AspNetUsers_UserId",
+                        name: "FK_AspNetUserRoles_Asp_UserId",
                         column: x => x.UserId,
-                        principalTable: "AspNetUsers",
+                        principalTable: "Asp",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
@@ -188,9 +188,9 @@ namespace vPetz.Migrations
                 {
                     table.PrimaryKey("PK_AspNetUserTokens", x => new { x.UserId, x.LoginProvider, x.Name });
                     table.ForeignKey(
-                        name: "FK_AspNetUserTokens_AspNetUsers_UserId",
+                        name: "FK_AspNetUserTokens_Asp_UserId",
                         column: x => x.UserId,
-                        principalTable: "AspNetUsers",
+                        principalTable: "Asp",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
@@ -224,12 +224,12 @@ namespace vPetz.Migrations
 
             migrationBuilder.CreateIndex(
                 name: "EmailIndex",
-                table: "AspNetUsers",
+                table: "Asp",
                 column: "NormalizedEmail");
 
             migrationBuilder.CreateIndex(
                 name: "UserNameIndex",
-                table: "AspNetUsers",
+                table: "Asp",
                 column: "NormalizedUserName",
                 unique: true);
         }
@@ -256,7 +256,7 @@ namespace vPetz.Migrations
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
-                name: "AspNetUsers");
+                name: "Asp");
         }
     }
 }

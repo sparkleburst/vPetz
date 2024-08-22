@@ -1,38 +1,184 @@
 @page "/pet/{PetId:int}"
+
 @using vPetz.Data
 @using vPetz.Data.Services
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Identity;
+
 @inject IPetService PetService
-@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject UserManager<ApplicationUser> UserManager
 
-<h3>Pet Details</h3>
+@rendermode InteractiveServer // Ensures buttons work
 
-@if (pet == null)
-{
-    <p><em>Loading pet details...</em></p>
-}
-else
-{
-    <div>
-        <h4>@pet.Name</h4>
-        <p>Type: @pet.Type.ToString()</p>
-        <p>Age: @pet.Age</p>
-        <p>Happiness: @pet.Happiness</p>
-        <p>Energy: @pet.Energy</p>
-        <p>Cleanliness: @pet.Cleanliness</p>
-        <p>Hunger: @pet.Hunger</p>
-        <p>Thirst: @pet.Thirst</p>
-        <p>Owner: @(pet.Owner?.UserName ?? "Shelter")</p>
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-body text-center">
+            <h3>Welcome @currentUsername</h3>
+            <p>This is @(isCurrentUserOwner ? "your" : ownerUsername + "'s") pet</p>
+            <p>@pet?.Description</p>
+            <img src="@(string.IsNullOrEmpty(pet?.ImageURL) ? "/images/default-pet.png" : pet.ImageURL)"
+                alt="@pet?.Name" class="img-fluid my-3" style="max-height: 300px; width: auto;" />
+            <p class="lead">
+                @if (pet != null)
+                {
+                    @($"{pet.Name} feels {PetService.GetPetFeeling(pet)}")
+                }
+                else
+                {
+                    @("Pet's feeling could not be determined.")
+                }
+            </p>
+        </div>
     </div>
-}
+
+    @if (pet != null)
+    {
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        @if (isCurrentUserOwner)
+                        {
+                            <label for="petName">Edit Name:</label>
+                            <InputText id="petName" class="form-control text-center" @bind-Value="pet.Name" />
+                        }
+                        else
+                        {
+                            <h4>@pet.Name</h4>
+                        }
+                        <p>Age: @pet.Age</p>
+                        <p>Type: @pet.Type.ToString()</p>
+
+                        @if (isCurrentUserOwner)
+                        {
+                            <div class="form-group">
+                                <label for="petDescription">Edit Description:</label>
+                                <InputTextArea id="petDescription" class="form-control" @bind-Value="pet.Description" />
+                                <button class="btn btn-success mt-2" @onclick="SavePetDetails">Save</button>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <p><strong>Happiness:</strong> @pet.Happiness%</p>
+                        <p><strong>Energy:</strong> @pet.Energy%</p>
+                        <p><strong>Hygiene:</strong> @pet.Cleanliness%</p>
+                        <p><strong>Hunger:</strong> @pet.Hunger%</p>
+                        <p><strong>Thirst:</strong> @pet.Thirst%</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4 text-center">
+            <div class="col">
+                <button class="btn btn-primary btn-square mx-2"
+                    @onclick="() => PerformPetAction(PetService.PetAction)">PET</button>
+                <button class="btn btn-primary btn-square mx-2"
+                    @onclick="() => PerformPetAction(PetService.FeedAction)">FEED</button>
+                <button class="btn btn-primary btn-square mx-2"
+                    @onclick="() => PerformPetAction(PetService.BrushAction)">BRUSH</button>
+                <button class="btn btn-primary btn-square mx-2"
+                    @onclick="() => PerformPetAction(PetService.WaterAction)">WATER</button>
+                <button class="btn btn-primary btn-square mx-2"
+                    @onclick="() => PerformPetAction(PetService.ExerciseAction)">EXERCISE</button>
+            </div>
+        </div>
+
+        <div class="row mt-4 text-center">
+            <div class="col">
+                <button class="btn btn-danger btn-square mx-2"
+                    @onclick="() => PerformNegativeAction(PetService.MakeSadAsync)">Make Sad</button>
+                <button class="btn btn-danger btn-square mx-2"
+                    @onclick="() => PerformNegativeAction(PetService.MakeHungryAsync)">Make Hungry</button>
+                <button class="btn btn-danger btn-square mx-2"
+                    @onclick="() => PerformNegativeAction(PetService.MakeMessyAsync)">Make Messy</button>
+                <button class="btn btn-danger btn-square mx-2"
+                    @onclick="() => PerformNegativeAction(PetService.MakeThirstyAsync)">Make Thirsty</button>
+                <button class="btn btn-danger btn-square mx-2"
+                    @onclick="() => PerformNegativeAction(PetService.MakeAwakeAsync)">Make Awake</button>
+            </div>
+        </div>
+    }
+</div>
 
 @code {
-    [Parameter]
-    public int PetId { get; set; }
+    [Parameter] public int PetId { get; set; }
 
     private Pet? pet;
+    private bool isCurrentUserOwner = false;
+    private string ownerUsername = "Unknown";
+    private string currentUsername = "Unknown";
 
     protected override async Task OnInitializedAsync()
     {
+        await LoadPetDetails();
+    }
+
+    private async Task LoadPetDetails()
+    {
         pet = await PetService.GetPetByIdAsync(PetId);
+
+        if (pet != null && pet.OwnerId != null)
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+            if (user.Identity?.IsAuthenticated ?? false)
+            {
+                var appUser = await UserManager.GetUserAsync(user);
+                if (appUser != null)
+                {
+                    var userId = appUser.Id;
+                    currentUsername = appUser.UserName ?? "Unknown";
+
+                    if (userId == pet.OwnerId)
+                    {
+                        isCurrentUserOwner = true;
+                    }
+                    ownerUsername = pet.Owner?.UserName ?? "Unknown";
+                }
+            }
+        }
+    }
+
+    private async Task RefreshPetStats()
+    {
+        if (pet != null)
+        {
+            pet = await PetService.GetPetByIdAsync(PetId);
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task SavePetDetails()
+    {
+        if (pet != null)
+        {
+            await PetService.UpdatePetDetailsAsync(pet);
+            Console.WriteLine("Pet details updated!");
+        }
+    }
+
+    private async Task PerformPetAction(Action<Pet> action)
+    {
+        if (pet != null)
+        {
+            action(pet);
+            await PetService.UpdatePetDetailsAsync(pet);
+            await RefreshPetStats(); // Refresh the stats after action
+        }
+    }
+
+    private async Task PerformNegativeAction(Func<Pet, Task> action)
+    {
+        if (pet != null)
+        {
+            await action(pet);
+            await RefreshPetStats(); // Refresh the stats after action
+        }
     }
 }
